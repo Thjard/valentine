@@ -43,7 +43,7 @@
 
     h1 {
       font-size: clamp(26px, 4vw, 40px);
-      margin: 0 0 30px;
+      margin: 0 0 10px;
       letter-spacing: 0.2px;
     }
 
@@ -84,7 +84,7 @@
     .playground {
       position: relative;
       width: min(520px, 86vw);
-      height: 60px;
+      height: 130px;
       margin: 18px auto 0;
     }
 
@@ -138,11 +138,11 @@
   <div class="card" id="card">
     <div class="hearts" id="hearts"></div>
 
-    <h1 id="question">Wanne be my Valentine Fenja? 💘</h1>
-    <p id="hint">Es gibt nur eine richtige Antwort… 😇</p>
+    <h1>Willst du mein Valentinstag-Date sein? 💘</h1>
+    <p>Es gibt nur eine richtige Antwort… 😇</p>
 
     <div class="playground" id="playground">
-      <button id="yesBtn">Ja 🤍</button>
+      <button id="yesBtn">Ja 💚</button>
       <button id="noBtn" aria-label="Nein">Nein ❤️‍🩹</button>
     </div>
 
@@ -159,41 +159,37 @@
     // Hilfsfunktion: clamp
     const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-    let hasStartedFleeing = false;
-
     // Setzt den Nein-Button an eine zufällige Position innerhalb der Playground-Fläche
     function moveNoButton() {
-    if (!hasStartedFleeing) return;
+      const area = playground.getBoundingClientRect();
+      const btn = noBtn.getBoundingClientRect();
 
-    const area = playground.getBoundingClientRect();
-    const btn = noBtn.getBoundingClientRect();
+      // Rand, damit er nicht am Rand klebt
+      const padding = 10;
 
-    const padding = 10;
+      const maxX = area.width - btn.width - padding;
+      const maxY = area.height - btn.height - padding;
 
-    const maxX = area.width - btn.width - padding;
-    const maxY = area.height - btn.height - padding;
+      // Zufällige Position
+      const x = Math.random() * maxX + padding;
+      const y = Math.random() * maxY + padding;
 
-    const x = Math.random() * maxX + padding;
-    const y = Math.random() * maxY + padding;
-
-    noBtn.style.left = `${x}px`;
-    noBtn.style.top = `${y}px`;
-    noBtn.style.transform = "translate(0, 0)";
-}
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top = `${y}px`;
+      noBtn.style.transform = "translate(0, 0)";
+    }
 
     // Wenn die Maus in die Nähe kommt: wegspringen
     function handleMouseMove(e) {
-    const btnRect = noBtn.getBoundingClientRect();
-    const dx = e.clientX - (btnRect.left + btnRect.width / 2);
-    const dy = e.clientY - (btnRect.top + btnRect.height / 2);
-    const dist = Math.hypot(dx, dy);
+      const btnRect = noBtn.getBoundingClientRect();
+      const dx = e.clientX - (btnRect.left + btnRect.width / 2);
+      const dy = e.clientY - (btnRect.top + btnRect.height / 2);
+      const dist = Math.hypot(dx, dy);
 
-    const fleeRadius = 120;
+      // "Schreckradius" (je kleiner, desto leichter klickbar)
+      const fleeRadius = 120;
 
-    if (dist < fleeRadius) {
-      hasStartedFleeing = true;
-      // moveNoButton();
-      }
+      if (dist < fleeRadius) moveNoButton();
     }
 
     // Zusätzlich: wenn man ihn fast berührt (hover/focus), springt er ebenfalls
@@ -214,24 +210,15 @@
     noBtn.addEventListener("click", (e) => {
       e.preventDefault();
       moveNoButton();
-      msg.textContent = "Huch, der Button ist aber schüchtern 😅";
+      msg.textContent = "Huch — der Button ist aber schüchtern 😅";
     });
 
     // Ja-Button: Erfolg + Herzen
     yesBtn.addEventListener("click", () => {
-    // Hinweistext ausblenden (Frage bleibt sichtbar!)
-    const hint = document.getElementById("hint");
-    if (hint) hint.style.display = "none";
+      msg.textContent = "Yaaay! 💞 Ich freu mich!";
 
-    // Buttons ausblenden
-    playground.style.display = "none";
-
-    // Erfolgsnachricht
-    msg.textContent = "Yesssss! 💞 Ich freu mich!";
-
-    // Herzen starten
-    for (let i = 0; i < 18; i++) {
-      setTimeout(() => spawnHeart(), i * 70);
+      for (let i = 0; i < 18; i++) {
+        setTimeout(() => spawnHeart(), i * 70);
       }
     });
 
@@ -258,5 +245,3 @@
   </script>
 </body>
 </html>
-
-
