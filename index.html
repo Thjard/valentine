@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Valentinstag?</title>
+  <style>
+    :root {
+      --bg1: #ffdde1;
+      --bg2: #ee9ca7;
+      --card: rgba(255, 255, 255, 0.75);
+      --text: #2b2b2b;
+      --yes: #22c55e;
+      --no: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: radial-gradient(circle at 20% 20%, var(--bg1), transparent 55%),
+                  radial-gradient(circle at 80% 30%, #ffd6a5, transparent 55%),
+                  radial-gradient(circle at 40% 90%, #cdb4db, transparent 55%),
+                  linear-gradient(135deg, var(--bg1), var(--bg2));
+      overflow: hidden;
+    }
+
+    .card {
+      width: min(720px, 92vw);
+      padding: 36px 28px;
+      border-radius: 22px;
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.15);
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      font-size: clamp(26px, 4vw, 40px);
+      margin: 0 0 10px;
+      letter-spacing: 0.2px;
+    }
+
+    p {
+      margin: 0 0 22px;
+      opacity: 0.85;
+      font-size: 16px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    button {
+      border: 0;
+      padding: 14px 22px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+      transition: transform 120ms ease, filter 120ms ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:active { transform: translateY(1px) scale(0.99); }
+    button:hover { filter: brightness(1.02); }
+
+    #yesBtn { background: var(--yes); color: white; }
+    #noBtn  { background: var(--no);  color: white; }
+
+    /* Der Nein-Button wird "frei" positioniert, damit er wegspringen kann */
+    .playground {
+      position: relative;
+      width: min(520px, 86vw);
+      height: 130px;
+      margin: 18px auto 0;
+    }
+
+    .playground #yesBtn {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-110%, -50%);
+    }
+
+    .playground #noBtn {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(10%, -50%);
+    }
+
+    .msg {
+      margin-top: 18px;
+      font-size: 18px;
+      font-weight: 700;
+      min-height: 28px;
+    }
+
+    .hearts {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: 22px;
+    }
+
+    .heart {
+      position: absolute;
+      bottom: -30px;
+      font-size: 18px;
+      opacity: 0.0;
+      animation: floatUp 3.6s ease-in forwards;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.08));
+    }
+
+    @keyframes floatUp {
+      0%   { transform: translateY(0) scale(0.9); opacity: 0.0; }
+      10%  { opacity: 0.9; }
+      100% { transform: translateY(-260px) scale(1.25); opacity: 0.0; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card" id="card">
+    <div class="hearts" id="hearts"></div>
+
+    <h1>Willst du mein Valentinstag-Date sein? 💘</h1>
+    <p>Es gibt nur eine richtige Antwort… 😇</p>
+
+    <div class="playground" id="playground">
+      <button id="yesBtn">Ja 💚</button>
+      <button id="noBtn" aria-label="Nein">Nein ❤️‍🩹</button>
+    </div>
+
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <script>
+    const playground = document.getElementById("playground");
+    const noBtn = document.getElementById("noBtn");
+    const yesBtn = document.getElementById("yesBtn");
+    const msg = document.getElementById("msg");
+    const hearts = document.getElementById("hearts");
+
+    // Hilfsfunktion: clamp
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+    // Setzt den Nein-Button an eine zufällige Position innerhalb der Playground-Fläche
+    function moveNoButton() {
+      const area = playground.getBoundingClientRect();
+      const btn = noBtn.getBoundingClientRect();
+
+      // Rand, damit er nicht am Rand klebt
+      const padding = 10;
+
+      const maxX = area.width - btn.width - padding;
+      const maxY = area.height - btn.height - padding;
+
+      // Zufällige Position
+      const x = Math.random() * maxX + padding;
+      const y = Math.random() * maxY + padding;
+
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top = `${y}px`;
+      noBtn.style.transform = "translate(0, 0)";
+    }
+
+    // Wenn die Maus in die Nähe kommt: wegspringen
+    function handleMouseMove(e) {
+      const btnRect = noBtn.getBoundingClientRect();
+      const dx = e.clientX - (btnRect.left + btnRect.width / 2);
+      const dy = e.clientY - (btnRect.top + btnRect.height / 2);
+      const dist = Math.hypot(dx, dy);
+
+      // "Schreckradius" (je kleiner, desto leichter klickbar)
+      const fleeRadius = 120;
+
+      if (dist < fleeRadius) moveNoButton();
+    }
+
+    // Zusätzlich: wenn man ihn fast berührt (hover/focus), springt er ebenfalls
+    noBtn.addEventListener("mouseenter", moveNoButton);
+    noBtn.addEventListener("mousemove", moveNoButton);
+    noBtn.addEventListener("focus", moveNoButton);
+
+    // Für Touch-Geräte: bei Annäherung (touchstart) weg
+    noBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      moveNoButton();
+    }, { passive: false });
+
+    // Auf Desktop: Mausbewegung im Playground tracken
+    playground.addEventListener("mousemove", handleMouseMove);
+
+    // Falls jemand ihn doch irgendwie klickt: freundlich bleiben :)
+    noBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      moveNoButton();
+      msg.textContent = "Huch — der Button ist aber schüchtern 😅";
+    });
+
+    // Ja-Button: Erfolg + Herzen
+    yesBtn.addEventListener("click", () => {
+      msg.textContent = "Yaaay! 💞 Ich freu mich!";
+
+      for (let i = 0; i < 18; i++) {
+        setTimeout(() => spawnHeart(), i * 70);
+      }
+    });
+
+    function spawnHeart() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.textContent = Math.random() < 0.5 ? "💖" : "💘";
+
+      const area = hearts.getBoundingClientRect();
+      const x = Math.random() * area.width;
+
+      heart.style.left = `${x}px`;
+      heart.style.animationDuration = `${2.8 + Math.random() * 2.0}s`;
+      hearts.appendChild(heart);
+
+      setTimeout(() => heart.remove(), 5200);
+    }
+
+    // Beim Laden einmal versetzen, damit es lebendig wirkt
+    moveNoButton();
+
+    // Bei Resize neu positionieren (sonst könnte er außerhalb landen)
+    window.addEventListener("resize", () => moveNoButton());
+  </script>
+</body>
+</html>
