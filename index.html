@@ -131,6 +131,21 @@
       10%  { opacity: 0.9; }
       100% { transform: translateY(-260px) scale(1.25); opacity: 0.0; }
     }
+    @media (max-width: 600px) {
+      .playground {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 14px;
+        height: auto;
+      }
+
+      .playground #yesBtn,
+      .playground #noBtn {
+        position: static;      /* 🔥 absolute Positionierung AUS */
+        transform: none;       /* 🔥 translate AUS */
+      }
+    }
   </style>
 </head>
 
